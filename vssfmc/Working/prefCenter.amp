@@ -1153,6 +1153,42 @@
             SET @error = true
         ENDIF
     ENDIF
+
+
+
+    /********* GET PUBLICATION LISTS NAMES ************/
+    SET @rr = CreateObject("RetrieveRequest")
+SetObjectProperty(@rr, "ObjectType", "List")
+AddObjectArrayItem(@rr, "Properties", "ID")
+AddObjectArrayItem(@rr, "Properties", "ListName")
+
+SET @filter = CreateObject("SimpleFilterPart")
+SetObjectProperty(@filter, "Property", "ListClassification")
+SetObjectProperty(@filter, "SimpleOperator", "equals")
+AddObjectArrayItem(@filter, "Value", "PublicationList")
+SetObjectProperty(@rr, "Filter", @filter)
+
+SET @rrStatus = InvokeRetrieve(@rr, @overallStatus, @requestID)
+
+
+  SET @rowCountPL = RowCount(@rrStatus)
+  IF @rowCountPL > 0 THEN
+    FOR @i = 1 TO @rowCountPL DO
+      SET @row = Row(@rrStatus, @i)
+      SET @listID = Field(@row, "ID")
+      SET @listName = Field(@row, "ListName")
+      SET @IdSet = TreatAsContent(CONCAT('%','%[SET @listID', @i, '=@listID]%','%'))
+      SET @FieldSet = TreatAsContent(CONCAT('%','%[SET @list', @i, '= @listName]%','%'))
+      ]%%
+      <p>List ID: %%=v(@listID)=%%, List Name: %%=v(@listName)=%%</p>
+      
+      %%[
+    NEXT @i
+  ELSE
+    ]%%
+    <p>No publication lists found.</p>
+    %%[
+  ENDIF
     
     ]%%
 
@@ -1279,7 +1315,36 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="slds-wrap slds-grid slds-p-vertical_small">
+
+                                %%[
+                                    FOR @i=1 TO @rowCountPL DO
+                                        SET @row = Row(@rrStatus,@i)
+                                        SET @listID = Field(@row, "ID")
+                                        SET @listName = Field(@row,"ListName")
+                                ]%%     
+
+                                        <div class="slds-wrap slds-grid slds-p-vertical_small">
+                                    <div class="slds-size_3-of-4 slds-medium-size_3-of-4 ">
+                                        %%=v(@listName)=%%
+                                        </div>
+                                    <div class="slds-size_1-of-4 slds-medium-size_1-of-4">
+                                        <div class="slds-grid comm-type-cat">
+                                            <div class="slds-size_1-of-2 slds-medium-size_1-of-2 slds-p-right_small">
+                                                <span class="slds-checkbox"><input id="Newsletter" name="Newsletter" type="checkbox" value="on" %%[ IF @Newsletter==true THEN ]%%checked="checked" %%[ ENDIF ]%%></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                        
+                                    
+                                %%[  NEXT @i
+                                
+                                
+                                ]%%
+
+
+
+                                <!-- <div class="slds-wrap slds-grid slds-p-vertical_small">
                                     <div class="slds-size_3-of-4 slds-medium-size_3-of-4 ">
                                         Weekly news, including new features and the latest investment opportunities.</div>
                                     <div class="slds-size_1-of-4 slds-medium-size_1-of-4">
@@ -1289,7 +1354,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                </div> -->
                             </div>
                         </div>
                     </div>
